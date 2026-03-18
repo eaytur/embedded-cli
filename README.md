@@ -1,23 +1,19 @@
 # embedded-cli
 
-A command line interface (CLI) implementation for STM32F407-based embedded systems.
+UART CLI demo application for STM32F4 using [tinycli](https://github.com/eaytur/tinycli).
 
 ## Project Structure
 
 ```
 embedded-cli/
-├── app/            # Application layer
+├── app/            # Application layer (commands, app_main)
 │   ├── inc/
 │   └── src/
-├── cli/            # CLI module
+├── bsp/            # Board Support Package (UART driver)
 │   ├── inc/
 │   └── src/
-├── bsp/            # Board Support Package
-│   ├── inc/
-│   └── src/
-├── config/         # Configuration files
-├── docs/           # Documentation
-├── tests/          # Tests
+├── libs/
+│   └── tinycli/    # CLI engine (git submodule)
 ├── Core/           # STM32CubeMX generated core files
 ├── Drivers/        # STM32 HAL and CMSIS drivers
 ├── cmake/          # CMake toolchain files
@@ -32,6 +28,14 @@ embedded-cli/
 - ARM GCC Toolchain (`arm-none-eabi-gcc`)
 - CMake >= 3.22
 - Ninja
+
+## Clone
+
+```bash
+git clone https://github.com/eaytur/embedded-cli.git
+cd embedded-cli
+git submodule update --init
+```
 
 ## Build
 
