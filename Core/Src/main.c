@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,7 +90,7 @@ int main(void)
   MX_GPIO_Init();
   MX_UART5_Init();
   /* USER CODE BEGIN 2 */
-
+  app_main();
   /* USER CODE END 2 */
 
   /* Infinite loop */
