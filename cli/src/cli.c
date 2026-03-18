@@ -49,22 +49,22 @@ static void cmd_help(int argc, char *argv[])
 
 void cli_init(void)
 {
+    static const cli_cmd_t builtin[] = {
+        { "help", "List all available commands", cmd_help },
+    };
+
     s_cmd_count = 0;
     s_line_len  = 0;
-    cli_register_cmd("help", "List all available commands", cmd_help);
+    cli_register_table(builtin, 1);
     cli_print(PROMPT);
 }
 
-void cli_register_cmd(const char *name, const char *help, cli_handler_t handler)
+void cli_register_table(const cli_cmd_t *table, uint8_t count)
 {
-    if (s_cmd_count >= CLI_MAX_CMDS)
+    for (uint8_t i = 0; i < count && s_cmd_count < CLI_MAX_CMDS; i++)
     {
-        return;
+        s_cmds[s_cmd_count++] = table[i];
     }
-    s_cmds[s_cmd_count].name    = name;
-    s_cmds[s_cmd_count].help    = help;
-    s_cmds[s_cmd_count].handler = handler;
-    s_cmd_count++;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -97,7 +97,10 @@ static void dispatch(void)
         if (strcmp(argv[0], s_cmds[i].name) == 0)
         {
             cli_print(CRLF);
-            s_cmds[i].handler(argc, argv);
+            if (s_cmds[i].handler != NULL)
+            {
+                s_cmds[i].handler(argc, argv);
+            }
             return;
         }
     }

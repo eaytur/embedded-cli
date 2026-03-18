@@ -45,6 +45,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     app/src/app.c
+    app/src/commands.c
     bsp/src/bsp_uart.c
     cli/src/cli.c
 )
@@ -56,9 +57,36 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     cli/inc
 )
 
+# Git revision
+find_package(Git QUIET)
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_TAG
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+endif()
+if(NOT GIT_HASH)
+    set(GIT_HASH "unknown")
+endif()
+if(NOT GIT_TAG)
+    set(GIT_TAG "v0.0.0")
+endif()
+
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined symbols
+    GIT_HASH="${GIT_HASH}"
+    GIT_TAG="${GIT_TAG}"
+    BUILD_TYPE="${CMAKE_BUILD_TYPE}"
 )
 
 # Remove wrong libob.a library dependency when using cpp files
