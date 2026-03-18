@@ -1,0 +1,3 @@
+[submodule "libs/tinycli"]
+	path = libs/tinycli
+	url = https://github.com/eaytur/tinycli
