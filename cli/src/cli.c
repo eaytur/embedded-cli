@@ -1,25 +1,29 @@
 #include "cli.h"
-#include "bsp_uart.h"
 #include <string.h>
 
 #define CLI_LINE_BUF_SIZE   128U
 #define CLI_MAX_CMDS        16U
 #define CLI_MAX_ARGS        8U
 
-static cli_cmd_t s_cmds[CLI_MAX_CMDS];
-static uint8_t   s_cmd_count = 0;
+static cli_cmd_t    s_cmds[CLI_MAX_CMDS];
+static uint8_t      s_cmd_count = 0;
 
-static char      s_line_buf[CLI_LINE_BUF_SIZE];
-static uint8_t   s_line_len = 0;
+static char         s_line_buf[CLI_LINE_BUF_SIZE];
+static uint8_t      s_line_len = 0;
 
-static const char *PROMPT   = "\r\n> ";
-static const char *CRLF     = "\r\n";
+static cli_write_fn_t s_write = NULL;
+
+static const char *PROMPT = "\r\n> ";
+static const char *CRLF   = "\r\n";
 
 /* -------------------------------------------------------------------------- */
 
 void cli_print(const char *str)
 {
-    bsp_uart_send((const uint8_t *)str, (uint16_t)strlen(str));
+    if (s_write != NULL)
+    {
+        s_write(str, (uint16_t)strlen(str));
+    }
 }
 
 void cli_println(const char *str)
@@ -47,12 +51,13 @@ static void cmd_help(int argc, char *argv[])
 
 /* -------------------------------------------------------------------------- */
 
-void cli_init(void)
+void cli_init(cli_write_fn_t write_fn)
 {
     static const cli_cmd_t builtin[] = {
         { "help", "List all available commands", cmd_help },
     };
 
+    s_write     = write_fn;
     s_cmd_count = 0;
     s_line_len  = 0;
     cli_register_table(builtin, 1);
@@ -76,9 +81,8 @@ static void dispatch(void)
         return;
     }
 
-    /* tokenize */
     char  *argv[CLI_MAX_ARGS];
-    int    argc = 0;
+    int    argc  = 0;
     char  *token = strtok(s_line_buf, " ");
 
     while (token != NULL && argc < CLI_MAX_ARGS)
@@ -136,7 +140,10 @@ void cli_process_byte(uint8_t byte)
             if (s_line_len < CLI_LINE_BUF_SIZE - 1U)
             {
                 s_line_buf[s_line_len++] = (char)byte;
-                bsp_uart_send_byte(byte); /* local echo */
+                if (s_write != NULL)
+                {
+                    s_write((const char *)&byte, 1); /* local echo */
+                }
             }
             break;
     }
